@@ -1,5 +1,4 @@
-node_modules
-db/app.db# Dependencies
+# Dependencies
 node_modules
 
 # Database
