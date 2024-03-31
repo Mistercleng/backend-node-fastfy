@@ -1,9 +1,9 @@
 # Functional Requirements
 
-- [ ] The user should be able to create transaction;
-- [ ] The user should be able to get account statement;
-- [ ] The user should be able to list all transactions;
-- [ ] The user should be able to get one transaction;
+- [ X ] The user should be able to create transaction;
+- [  ] The user should be able to get account statement;
+- [ X ] The user should be able to list all transactions;
+- [ X ] The user should be able to get one transaction;
 
 # Business Rules
 
