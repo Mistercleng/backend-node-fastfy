@@ -2,29 +2,51 @@ import { FastifyInstance } from "fastify"
 import { z } from "zod"
 import { knex } from "../database"
 import { randomUUID, setEngine } from 'node:crypto'
+import { checkSessionIdExist } from "../middlewares/check=session-id-exist"
 
 
 export async function transactionsRoutes(app: FastifyInstance): Promise<void>{
-    app.get('/', async () => {
-      const transactions = knex('transactions').select()
+    app.get('/', {
+      preHandler: checkSessionIdExist,
+    },async (request,reply) => {
+      const { sessionId } = request.cookies
+
+      const transactions = knex('transactions')
+      .where('session_id',sessionId)
+      .select()
       return transactions 
     })
 
-    app.get('/:id', async (request)=>{
+    app.get('/:id', {
+      preHandler: checkSessionIdExist,
+    },async (request)=>{
       const getTransactionParamsSchema = z.object({
         id: z.string().uuid(),
       })
 
       const { id } = getTransactionParamsSchema.parse(request.params)
 
-      const transactions = await knex('transactions').where('id',id).first()
+      const { sessionId } = request.cookies
+
+      const transactions = await knex('transactions')
+        .where({
+          session_id: sessionId,
+          id
+        })
+          .first()
 
       return { transactions }
 
     })
 
-    app.get('/summary', async ()=>{
-      const summary = await knex('transactions').sum('amount',{as: 'amount' }).first()
+    app.get('/summary', {
+      preHandler: checkSessionIdExist,
+    }, async (request)=>{
+      const { sessionId } = request.cookies
+      const summary = await knex('transactions')
+      .where('session_id',sessionId)
+      .sum('amount',{as: 'amount' })
+      .first()
       return { summary }
     })
 
@@ -39,6 +61,8 @@ export async function transactionsRoutes(app: FastifyInstance): Promise<void>{
         const {title,amount,type} = createTransactionBodySchema.parse(request.body)
 
         let sessionId = request.cookies.sessionId
+
+
 
         if(!sessionId) {
           sessionId = randomUUID()
